@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="UTF-8">	
+		<meta http-equiv="Content-Language" content="pt-br">
+		<title>Agenda</title>
+		
+		<style>						
+			body { background-color: #DADADA; }			
+			input { width: 100%; }
+			td { padding: 2px; }
+						
+			button { background-color: gray; color: white; font-weight: bold; }			
+			button.green { background-color: green; }
+			button.red { background-color: red; }
+			button.blue { background-color: blue; }
+		</style>
+
+		<!--
+			Projeto: Agenda Javascript			
+			Autor:   Rafael Delfino Calzado
+			Data: 27/10/2017
+		-->
+		
+		<script>
+			var agenda = Array();
+			
+			//--------------------------------------------\\
+			
+			function compare(a, b) {
+				return (a.nome > b.nome);				
+			}
+		
+			//--------------------------------------------\\
+			
+			function cria_link(n, del) {
+				var div  = document.createElement("div");				
+				var td   = document.createElement("td");
+				var btn = document.createElement("button");
+				var js  = "javascript: ";
+				
+				if (del) {
+					js += "del_agenda(" + n + ")";
+					var txt = document.createTextNode("Excluir");
+					btn.setAttribute("class", "red");
+					
+				} else {
+					js += "edit_agenda(" + n + ")";
+					var txt = document.createTextNode("Editar");
+					btn.setAttribute("class", "blue");
+				}
+				
+				btn.setAttribute("onclick", js);
+				btn.appendChild(txt);
+				div.appendChild(btn);
+				
+				td.setAttribute("width", "10%");
+				td.setAttribute("align", "center");						
+				td.appendChild(div);								
+				
+				return td;
+			}
+			
+			//--------------------------------------------\\
+
+			function del_agenda(n) {
+				if (confirm('Deseja realmente excluir este registro ?')) {
+					agenda.splice(n,1);				
+					lista_agenda();
+				}
+			}
+			
+			//--------------------------------------------\\
+			
+			function edit_agenda(n) {
+				var f = document.forms[0];
+				
+				f.elements[0].value = n;
+										
+				f.NM_Pessoa.value = agenda[n].nome;
+				f.EM_Pessoa.value = agenda[n].email;
+				f.NR_Tel.value = agenda[n].tel;
+			}
+			
+			//--------------------------------------------\\
+			
+			function add_agenda(f) {
+				var n = f.ID_Agenda.value;
+				
+				var vetor = { "nome": f.NM_Pessoa.value, 
+							  "email": f.EM_Pessoa.value,
+							  "tel": f.NR_Tel.value };							
+				
+				if (n == "")
+					agenda.push(vetor);					
+				else 
+					agenda[n] = vetor;
+					
+				agenda.sort(compare);
+								
+				lista_agenda();
+			}
+						
+			//--------------------------------------------\\
+						
+			function lista_agenda() {					
+				var div  = document.getElementById("diva");
+				var tbl  = document.createElement("table");	
+				
+				var f = document.forms[0];			
+				f.reset();
+				f.elements[1].focus();
+				
+			    div.innerHTML = "";
+				
+				tbl.setAttribute("border", "1");
+				tbl.setAttribute("width", "70%");
+				
+				var l = agenda.length;
+								
+				if (l > 0) {
+					for (var x=0; x<l; x++) {
+						var a  = agenda[x];
+						var tr = document.createElement("tr");						
+						
+						for (var y in a) {
+							var txt = document.createTextNode(a[y]);
+							var td  = document.createElement("td");
+							
+							
+							switch (y) {
+								case "email":
+									alg = "center";
+									tam = "25%";																		
+									break;
+									
+								case "tel":
+									alg = "center";
+									tam = "20%";
+									break;
+									
+								default: 
+									alg = "left";
+									tam = "35%";
+									break;
+							}
+							
+							td.setAttribute("width", tam);
+							td.setAttribute("align", alg);							
+							
+							td.appendChild(txt);
+							tr.appendChild(td);
+						}
+									
+						tr.appendChild(cria_link(x, false));
+						tr.appendChild(cria_link(x, true));
+						
+						tbl.appendChild(tr);
+					}					
+					
+					div.appendChild(tbl);			
+				}
+			}
+			
+			//--------------------------------------------\\
+			
+		</script>
+		
+	</head>
+	
+	<body>		
+		<div align="center">
+		<form method="post" onsubmit="add_agenda(this); return false;">
+		<input type="hidden" name="ID_Agenda">
+		<table width="70%">
+			<thead>
+				<tr>
+					<th>Nome</th>
+					<th>E-mail</th>
+					<th>Telefone</th>
+					<th colspan="2" align="center">Comandos</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				<tr>
+					<td width="35%">
+						<input type="text" name="NM_Pessoa" maxlength="40" required autofocus>
+					</td>
+					
+					<td width="25%">
+						<input type="email" name="EM_Pessoa" maxlength="30" required>
+					</td>
+					
+					<td width="20%">
+						<input type="number" name="NR_Tel" min="0" required>
+					</td>
+					
+					<td width="10%" align="center"><button type="submit" class="green">Salvar</button></td>
+					<td width="10%" align="center"><button type="reset">Limpar</button></td>
+				</tr>
+			</tbody>		
+		</table>
+		</form>
+		</div>
+		
+		<br>
+		
+		<div id="diva" align="center"></div>
+		
+		<script> lista_agenda(); </script>		
+	</body>
+</html>
