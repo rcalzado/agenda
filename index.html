@@ -21,18 +21,55 @@
 			Projeto: Agenda Javascript			
 			Autor:   Rafael Delfino Calzado
 			Data: 27/10/2017
-			Versão: 1.0
+			Versão: 1.1
 		-->
 		
-		<script>
-			var agenda = Array();
+		<script>			
+			var agenda = {"item": []};
+			load_cookie();
 			
 			//--------------------------------------------\\
-			
-			function compare(a, b) {
-				return (a.nome > b.nome);				
+
+			function save_cookie() {
+				setCookie("ck_agenda", JSON.stringify(agenda), 365);
 			}
-		
+
+			//--------------------------------------------\\
+			
+			function load_cookie() {
+				var ck = getCookie("ck_agenda");				
+				if (ck != "") agenda = JSON.parse(ck);				
+			}
+
+			//--------------------------------------------\\
+			
+			function setCookie(cname, cvalue, exdays) {
+				var d = new Date();
+				d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+				var expires = "expires="+d.toUTCString();
+				document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+			}
+
+			//--------------------------------------------\\
+			
+			function getCookie(cname) {
+				var name = cname + "=";
+				var ca = document.cookie.split(';');
+				
+				for (var i = 0; i < ca.length; i++) {
+					var c = ca[i];
+					while (c.charAt(0) == ' ') {
+						c = c.substring(1);
+					}
+					
+					if (c.indexOf(name) == 0) {
+						return c.substring(name.length, c.length);
+					}
+				}
+				
+				return "";
+			}
+
 			//--------------------------------------------\\
 			
 			function cria_link(n, del) {
@@ -67,7 +104,8 @@
 
 			function del_agenda(n) {
 				if (confirm('Deseja realmente excluir este registro ?')) {
-					agenda.splice(n,1);				
+					agenda.item.splice(n,1);
+					save_cookie();
 					lista_agenda();
 				}
 			}
@@ -79,27 +117,25 @@
 				
 				f.elements[0].value = n;
 										
-				f.NM_Pessoa.value = agenda[n].nome;
-				f.EM_Pessoa.value = agenda[n].email;
-				f.NR_Tel.value = agenda[n].tel;
+				f.NM_Pessoa.value = agenda.item[n].nome;
+				f.EM_Pessoa.value = agenda.item[n].email;
+				f.NR_Tel.value = agenda.item[n].tel;
 			}
 			
 			//--------------------------------------------\\
 			
 			function add_agenda(f) {
 				var n = f.ID_Agenda.value;
+
+				if (n == "") n = agenda.item.length;
 				
-				var vetor = { "nome": f.NM_Pessoa.value, 
+				var vetor = { "nome":  f.NM_Pessoa.value, 
 							  "email": f.EM_Pessoa.value,
-							  "tel": f.NR_Tel.value };							
+							  "tel":   f.NR_Tel.value };
 				
-				if (n == "")
-					agenda.push(vetor);					
-				else 
-					agenda[n] = vetor;
-					
-				agenda.sort(compare);
-								
+				agenda.item[n] = vetor;
+
+				save_cookie();
 				lista_agenda();
 			}
 						
@@ -117,43 +153,46 @@
 				
 				tbl.setAttribute("border", "1");
 				tbl.setAttribute("width", "70%");
-				
-				var l = agenda.length;
-								
-				if (l > 0) {
-					for (var x=0; x<l; x++) {
-						var a  = agenda[x];
-						var tr = document.createElement("tr");						
+												
+				if (agenda.item.length > 0) {					
+					
+					for (var x in agenda.item) {
+						var tr = document.createElement("tr");
 						
-						for (var y in a) {
-							var txt = document.createTextNode(a[y]);
+						
+						for (var y in agenda.item[x]) {							
 							var td  = document.createElement("td");
-							
+							var alg = "";
+							var tam = "35%";
+							var txt = "";
 							
 							switch (y) {
-								case "email":
+								case "nome": 
+								    txt = agenda.item[x].nome;
+									alg = "left";
+									tam = "35%";
+									break;
+									
+								case "email": 
+									txt = agenda.item[x].email;									
 									alg = "center";
 									tam = "25%";																		
 									break;
 									
-								case "tel":
+								case "tel": 
+									txt = agenda.item[x].tel;
 									alg = "center";
 									tam = "20%";
-									break;
-									
-								default: 
-									alg = "left";
-									tam = "35%";
-									break;
+									break; 
 							}
 							
 							td.setAttribute("width", tam);
 							td.setAttribute("align", alg);							
-							
-							td.appendChild(txt);
+
+							td.appendChild(document.createTextNode(txt));
 							tr.appendChild(td);
 						}
-									
+						
 						tr.appendChild(cria_link(x, false));
 						tr.appendChild(cria_link(x, true));
 						
@@ -210,6 +249,6 @@
 		
 		<div id="diva" align="center"></div>
 		
-		<script> lista_agenda(); </script>		
+		<script> lista_agenda(); </script>	
 	</body>
 </html>
